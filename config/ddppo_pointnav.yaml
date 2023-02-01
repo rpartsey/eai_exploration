@@ -1,0 +1,93 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/task: pointnav
+  - /habitat/simulator/agents@habitat.simulator.agents.main_agent: rgbd_agent  # agent_base depth_agent rgb_agent rgbd_agent
+  - /habitat/dataset/pointnav: habitat_test
+  - /habitat_baselines: habitat_baselines_rl_config_base
+  - _self_
+
+habitat:
+  env_task: GymHabitatEnv
+  environment:
+    max_episode_steps: 500
+  simulator:
+    agents:
+      main_agent:
+        sim_sensors:
+          rgb_sensor:
+            width: 256
+            height: 256
+          depth_sensor:
+            width: 256
+            height: 256
+  dataset:
+    type: PointNav-v1
+    split: train
+    data_path: data/datasets/pointnav/habitat-test-scenes/v1/{split}/{split}.json.gz
+
+habitat_baselines:
+  verbose: False
+  trainer_name: ddppo
+  torch_gpu_id: 0
+  tensorboard_dir: output/baselines/exp1/tb
+  video_dir: output/baselines/exp1/video_dir
+  test_episode_count: -1
+  eval_ckpt_path_dir: output/baselines/exp1/new_checkpoints
+  num_environments: 1
+  checkpoint_folder: output/baselines/exp1/new_checkpoints
+  num_updates: -1
+  total_num_steps: 2.5e9
+  log_interval: 10
+  num_checkpoints: 100
+  # Force PyTorch to be single threaded as
+  # this improves performance considerably
+  force_torch_single_threaded: True
+  rl:
+    policy:
+      name: PointNavResNetPolicy
+    ppo:
+      # ppo params
+      clip_param: 0.2
+      ppo_epoch: 2
+      num_mini_batch: 1
+      value_loss_coef: 0.5
+      entropy_coef: 0.01
+      lr: 2.5e-4
+      eps: 1e-5
+      max_grad_norm: 0.2
+      num_steps: 128
+      use_gae: True
+      gamma: 0.99
+      tau: 0.95
+      use_linear_clip_decay: False
+      use_linear_lr_decay: False
+      reward_window_size: 50
+      use_normalized_advantage: False
+      hidden_size: 512
+      # Use double buffered sampling, typically helps
+      # when environment time is similar or larger than
+      # policy inference time during rollout generation
+      use_double_buffered_sampler: False
+    ddppo:
+      sync_frac: 0.6
+      # The PyTorch distributed backend to use
+      distrib_backend: NCCL
+      # Visual encoder backbone
+      # pretrained_weights: data/ddppo-models/gibson-2plus-mp3d-train-val-test-se-resneXt50-rgb.pth
+      pretrained_weights: data/ddppo-models/gibson-4plus-resnet50.pth
+      # Initialize with pretrained weights
+      pretrained: False
+      # pretrained: True
+      # Initialize just the visual encoder backbone with pretrained weights
+      pretrained_encoder: False
+      # Whether the visual encoder backbone will be trained.
+      train_encoder: True
+      # Whether to reset the critic linear layer
+      reset_critic: True
+      # Model parameters
+      # backbone: se_resneXt50
+      backbone: resnet50
+      rnn_type: LSTM
+      num_recurrent_layers: 2

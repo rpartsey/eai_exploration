@@ -1,0 +1,27 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/task: pointnav_task
+  - /habitat/simulator/agents@habitat.simulator.agents.main_agent: rgbd_agent  # agent_base depth_agent rgb_agent rgbd_agent
+  - /habitat/dataset/pointnav: habitat_test
+  - _self_
+
+habitat:
+  env_task: GymHabitatEnv
+  environment:
+    max_episode_steps: 500
+  simulator:
+    agents:
+      main_agent:
+        sim_sensors:
+          rgb_sensor:
+            width: 256
+            height: 256
+          depth_sensor:
+            width: 256
+            height: 256
+  dataset:
+    type: PointNav-v1
+    split: train
+    data_path: data/datasets/pointnav/habitat-test-scenes/v1/{split}/{split}.json.gz
