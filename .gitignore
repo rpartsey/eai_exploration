@@ -131,6 +131,9 @@ dmypy.json
 # Pycharm
 .idea
 
+# Mac OS-specific storage files
+.DS_Store
+
 # Exclude data from source control by default
 /data
 /output
