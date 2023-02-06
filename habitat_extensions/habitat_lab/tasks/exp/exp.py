@@ -8,7 +8,8 @@ from habitat.core.registry import registry
 from habitat.core.dataset import Dataset, Episode
 from habitat.core.simulator import Simulator
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
-from habitat.tasks.nav.nav import TopDownMap
+# from habitat.tasks.nav.nav import TopDownMap
+from habitat_extensions.habitat_lab.tasks.nav.nav import TopDownMap
 
 
 @registry.register_measure
@@ -20,7 +21,7 @@ class ExplorationVisitedLocationsReward(Measure):
     See DD-PPO paper: https://arxiv.org/pdf/1911.00357.pdf.
     """
 
-    cls_uuid: str = "exploration_visited_locations_reward"
+    cls_uuid: str = "exploration_vlr"
 
     def __init__(
         self, sim: HabitatSim, config: DictConfig, *args: Any, **kwargs: Any
@@ -45,7 +46,10 @@ class ExplorationVisitedLocationsReward(Measure):
     def _update_metric(self):
         curr_state = self._topdown_map_measure.get_metric()
         n_curr_visited_locations = curr_state["fog_of_war_mask"].sum()
-        self._metric = n_curr_visited_locations - self._n_prev_visited_locations
+        self._metric = {
+            "reward": n_curr_visited_locations - self._n_prev_visited_locations,
+            "top_down_map": self._topdown_map_measure.get_metric()
+        }
         self._n_prev_visited_locations = n_curr_visited_locations
 
 

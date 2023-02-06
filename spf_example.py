@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import habitat
+from habitat import EmbodiedTask
 from habitat.config.default_structured_configs import (
     CollisionsMeasurementConfig,
     FogOfWarConfig,
@@ -182,7 +183,7 @@ def example_top_down_map_measure():
             vut.display_video(f"{output_path}/{video_name}.mp4")
 
 
-def example_exploration_visited_locations_reward():
+def example_exploration_vlr():
     # Create habitat config
     config = habitat.get_config(
         config_path="config/exploration.yaml"
@@ -207,6 +208,7 @@ def example_exploration_visited_locations_reward():
 
             # Get metrics
             info = env.get_metrics()
+            info["top_down_map"] = info["exploration_vlr"].pop("top_down_map")
             info = flatten_dict(info)
             # Concatenate RGB-D observation and topdowm map into one image
             frame = observations_to_image(observations, info)
@@ -230,6 +232,7 @@ def example_exploration_visited_locations_reward():
                 # Step in the environment
                 observations = env.step(action)
                 info = env.get_metrics()
+                info["top_down_map"] = info["exploration_vlr"].pop("top_down_map")
                 info = flatten_dict(info)
                 frame = observations_to_image(observations, info)
 
@@ -238,7 +241,7 @@ def example_exploration_visited_locations_reward():
                 frame = overlay_frame(frame, extract_scalars_from_info(info))
                 vis_frames.append(frame)
 
-                if step > 15:
+                if step > 70:
                     fog_of_war_mask = info["top_down_map.fog_of_war_mask"]
                     plt.imshow(fog_of_war_mask)
                     plt.show()
@@ -259,4 +262,4 @@ def example_exploration_visited_locations_reward():
 if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
-    example_exploration_visited_locations_reward()
+    example_exploration_vlr()

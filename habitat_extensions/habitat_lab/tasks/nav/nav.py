@@ -4,9 +4,12 @@ import numpy as np
 from habitat.core.registry import registry
 from habitat.tasks.nav.nav import TopDownMap as TopDownMapBase
 from habitat.utils.visualizations import fog_of_war, maps
+from habitat.core.simulator import (
+    AgentState,
+)
 
 
-@registry.register_measure
+@registry.register_measure(name="top_down_map_v2")
 class TopDownMap(TopDownMapBase):
     def __init__(
         self,
@@ -19,6 +22,9 @@ class TopDownMap(TopDownMapBase):
         self._meters_per_pixel = config.meters_per_pixel or maps.calculate_meters_per_pixel(
             self._map_resolution, sim=self._sim
         )
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return "top_down_map_v2"
 
     def get_original_map(self):
         top_down_map = maps.get_topdown_map_from_sim(
@@ -46,3 +52,32 @@ class TopDownMap(TopDownMapBase):
                 max_line_len=self._config.fog_of_war.visibility_dist
                 / self._meters_per_pixel,
             )
+
+    def update_map(self, agent_state: AgentState, agent_index: int):
+        agent_position = agent_state.position
+        a_x, a_y = maps.to_grid(
+            agent_position[2],
+            agent_position[0],
+            (self._top_down_map.shape[0], self._top_down_map.shape[1]),
+            sim=self._sim,
+        )
+        # Don't draw over the source point
+        # if self._top_down_map[a_x, a_y] != maps.MAP_SOURCE_POINT_INDICATOR:
+        #     color = 10 + min(
+        #         self._step_count * 245 // self._config.max_episode_steps, 245
+        #     )
+        #
+        #     thickness = self.line_thickness
+        #     if self._previous_xy_location[agent_index] is not None:
+        #         cv2.line(
+        #             self._top_down_map,
+        #             self._previous_xy_location[agent_index],
+        #             (a_y, a_x),
+        #             color,
+        #             thickness=thickness,
+        #         )
+        angle = TopDownMap.get_polar_angle(agent_state)
+        self.update_fog_of_war_mask(np.array([a_x, a_y]), angle)
+
+        self._previous_xy_location[agent_index] = (a_y, a_x)
+        return a_x, a_y
