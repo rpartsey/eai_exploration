@@ -8,49 +8,34 @@ defaults:
     - turn_left
     - turn_right
   - measurements:
+    - top_down_map
     - exploration_vlr
-    - distance_to_goal
-    - success
-    - spl
-    - collisions
-#    - top_down_map_v2
+    - exploration_success
   - lab_sensors:
     - pointgoal_with_gps_compass_sensor
   - _self_
 
 type: Nav-v0
 end_on_success: True
-reward_measure: "exploration_visited_locations_reward"
-success_measure: "spl"
+reward_measure: "exploration_vlr"
+success_measure: "exploration_success"
 goal_sensor_uuid: pointgoal_with_gps_compass
 measurements:
+  top_down_map:
+    map_padding: 0
+    map_resolution: 1024
+    meters_per_pixel: 0.25 # if meters_per_pixel is set, map_resolution is ignored
+    draw_source: False
+    draw_border: False
+    draw_shortest_path: False
+    draw_view_points: False
+    draw_goal_positions: False
+    draw_goal_aabbs: False
+    fog_of_war:
+      draw: True
+      visibility_dist: 5.0 # meters
+      fov: 90
   exploration_vlr:
-    map_config:
-      map_padding: 0
-      map_resolution: 1024
-      meters_per_pixel: 0.25 # if meters_per_pixel is set, map_resolution is ignored
-      draw_source: False
-      draw_border: False
-      draw_shortest_path: False
-      draw_view_points: False
-      draw_goal_positions: False
-      draw_goal_aabbs: False
-      fog_of_war:
-        draw: True
-        visibility_dist: 5.0 # meters
-        fov: 90
-  # visualization:
-#  top_down_map_v2:  # ${habitat.task.measurements.exploration_vlr.map_config}
-#    map_padding: 0
-#    map_resolution: 1024
-#    meters_per_pixel: 1 # if meters_per_pixel is set, map_resolution is ignored
-#    draw_source: False
-#    draw_border: False
-#    draw_shortest_path: False
-#    draw_view_points: False
-#    draw_goal_positions: False
-#    draw_goal_aabbs: False
-#    fog_of_war:
-#      draw: True
-#      visibility_dist: 5.0 # meters
-#      fov: 90
+    alpha: 1.0
+  exploration_success:
+    success_threshold: 0.7

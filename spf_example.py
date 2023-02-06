@@ -195,10 +195,7 @@ def example_exploration_vlr():
     # Create simulation environment
     with habitat.Env(config=config, dataset=dataset) as env:
         # Create ShortestPathFollowerAgent agent
-        agent = ShortestPathFollowerAgent(
-            env=env,
-            goal_radius=config.habitat.task.measurements.success.success_distance,
-        )
+        agent = ShortestPathFollowerAgent(env=env, goal_radius=0.2)
         # Create video of agent navigating in the first episode
         num_episodes = 1
         for _ in range(num_episodes):
@@ -208,14 +205,10 @@ def example_exploration_vlr():
 
             # Get metrics
             info = env.get_metrics()
-            info["top_down_map"] = info["exploration_vlr"].pop("top_down_map")
             info = flatten_dict(info)
             # Concatenate RGB-D observation and topdowm map into one image
             frame = observations_to_image(observations, info)
 
-            # Remove top_down_map from metrics
-            # if "top_down_map" in info:
-            #     info.pop("top_down_map")
             # Overlay numeric metrics onto frame
             frame = overlay_frame(frame, extract_scalars_from_info(info))
             # Add fame to vis_frames
@@ -232,12 +225,9 @@ def example_exploration_vlr():
                 # Step in the environment
                 observations = env.step(action)
                 info = env.get_metrics()
-                info["top_down_map"] = info["exploration_vlr"].pop("top_down_map")
                 info = flatten_dict(info)
                 frame = observations_to_image(observations, info)
 
-                # if "top_down_map" in info:
-                #     info.pop("top_down_map")
                 frame = overlay_frame(frame, extract_scalars_from_info(info))
                 vis_frames.append(frame)
 

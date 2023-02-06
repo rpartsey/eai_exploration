@@ -10,6 +10,12 @@ from omegaconf import II, MISSING
 
 
 @dataclass
+class ExplorationSuccessMeasurementConfig(MeasurementConfig):
+    type: str = "ExplorationSuccess"
+    success_threshold: float = 0.7
+
+
+@dataclass
 class TopDownMapV2MeasurementConfig(TopDownMapMeasurementConfigBase):
     type: str = "TopDownMap"
     meters_per_pixel: Optional[float] = None
@@ -18,14 +24,14 @@ class TopDownMapV2MeasurementConfig(TopDownMapMeasurementConfigBase):
 @dataclass
 class ExplorationVisitedLocationsRewardMeasurementConfig(MeasurementConfig):
     type: str = "ExplorationVisitedLocationsReward"
-    map_config: TopDownMapV2MeasurementConfig = TopDownMapV2MeasurementConfig()
+    alpha: float = 1.0
 
 
 cs = ConfigStore.instance()
 cs.store(
-    package="habitat.task.measurements.top_down_map_v2",
+    package="habitat.task.measurements.top_down_map",
     group="habitat/task/measurements",
-    name="top_down_map_v2",
+    name="top_down_map",
     node=TopDownMapV2MeasurementConfig,
 )
 cs.store(
@@ -33,4 +39,10 @@ cs.store(
     group="habitat/task/measurements",
     name="exploration_vlr",
     node=ExplorationVisitedLocationsRewardMeasurementConfig,
+)
+cs.store(
+    package="habitat.task.measurements.exploration_success",
+    group="habitat/task/measurements",
+    name="exploration_success",
+    node=ExplorationSuccessMeasurementConfig,
 )

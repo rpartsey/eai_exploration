@@ -9,8 +9,10 @@ from habitat.core.simulator import (
 )
 
 
-@registry.register_measure(name="top_down_map_v2")
+@registry.register_measure
 class TopDownMap(TopDownMapBase):
+    cls_uuid = "top_down_map"
+
     def __init__(
         self,
         sim: "HabitatSim",
@@ -24,7 +26,7 @@ class TopDownMap(TopDownMapBase):
         )
 
     def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
-        return "top_down_map_v2"
+        return self.cls_uuid
 
     def get_original_map(self):
         top_down_map = maps.get_topdown_map_from_sim(
