@@ -22,6 +22,6 @@ habitat:
             width: 256
             height: 256
   dataset:
-    type: PointNav-v1
-    split: train
-    data_path: data/datasets/pointnav/habitat-test-scenes/v1/{split}/{split}.json.gz
+    type: ExplorationStaticDataset
+    split: train_10_percent
+    data_path: data/datasets/exploration/hm3d/v1/{split}/{split}.json.gz

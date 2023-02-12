@@ -11,15 +11,12 @@ defaults:
     - top_down_map
     - exploration_vlr
     - exploration_success
-  - lab_sensors:
-    - pointgoal_with_gps_compass_sensor
   - _self_
 
 type: Nav-v0
 end_on_success: True
 reward_measure: "exploration_vlr"
 success_measure: "exploration_success"
-goal_sensor_uuid: pointgoal_with_gps_compass
 measurements:
   top_down_map:
     map_padding: 0

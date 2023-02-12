@@ -4,6 +4,7 @@ import json
 import os
 from typing import List, Dict, Callable
 from glob import iglob
+import shutil
 
 
 class PointNavToExplorationDatasetConverter:
@@ -18,7 +19,7 @@ class PointNavToExplorationDatasetConverter:
         self._splits = splits
 
     @staticmethod
-    def _get_exploration_fields(pointnav_episode: Dict):
+    def _get_exploration_episode_fields(pointnav_episode: Dict):
         return {
             "episode_id": pointnav_episode["episode_id"],
             "scene_id": pointnav_episode["scene_id"],
@@ -29,9 +30,9 @@ class PointNavToExplorationDatasetConverter:
     @staticmethod
     def _pointnav_episodes_to_exploration(
             pointnav_episodes: List[Dict],
-            filter_function: Callable[[Dict], Dict]
+            convert_function: Callable[[Dict], Dict]
     ):
-        exploration_episodes = [filter_function(episode) for episode in pointnav_episodes]
+        exploration_episodes = [convert_function(episode) for episode in pointnav_episodes]
 
         return exploration_episodes
 
@@ -44,6 +45,7 @@ class PointNavToExplorationDatasetConverter:
 
     @staticmethod
     def _save_episode_dataset(episodes: List[Dict], save_path: str):
+        assert not os.path.exists(save_path), f"Path {save_path} already exists."
         with gzip.open(save_path, "wt") as f:
             json.dump({"episodes": episodes}, f)
 
@@ -60,26 +62,43 @@ class PointNavToExplorationDatasetConverter:
             if len(pointnav_episodes) != 0:
                 exploration_episodes = self._pointnav_episodes_to_exploration(
                     pointnav_episodes=pointnav_episodes,
-                    filter_function=self._get_exploration_fields
+                    convert_function=self._get_exploration_episode_fields
                 )
                 dest_data_file_path = f"{self._exploration_dataset_path}/{split}/{split}.json.gz"
-                self._create_dirs(os.path.dirname(dest_data_file_path))
-                self._save_episode_dataset(exploration_episodes, dest_data_file_path)
+                self._create_dirs(
+                    dirs_path=os.path.dirname(dest_data_file_path),
+                    exist_ok=True
+                )
+                self._save_episode_dataset(
+                    episodes=exploration_episodes,
+                    save_path=dest_data_file_path
+                )
 
             else:
+                shutil.copyfile(
+                    f"{self._pointnav_dataset_path}/{split}/{split}.json.gz",
+                    f"{self._exploration_dataset_path}/{split}/{split}.json.gz"
+                )
+
                 for scene_dataset_file_path in iglob(f"{self._pointnav_dataset_path}/{split}/content/*.json.gz"):
                     data = self._load_episode_dataset(scene_dataset_file_path)
                     pointnav_episodes = data["episodes"]
 
                     exploration_episodes = self._pointnav_episodes_to_exploration(
                         pointnav_episodes=pointnav_episodes,
-                        filter_function=self._get_exploration_fields
+                        convert_function=self._get_exploration_episode_fields
                     )
 
                     scene_dataset_file_name = os.path.basename(scene_dataset_file_path)
                     dest_data_file_path = f"{self._exploration_dataset_path}/{split}/content/{scene_dataset_file_name}"
-                    self._create_dirs(os.path.dirname(dest_data_file_path))
-                    self._save_episode_dataset(exploration_episodes, dest_data_file_path)
+                    self._create_dirs(
+                        dirs_path=os.path.dirname(dest_data_file_path),
+                        exist_ok=True
+                    )
+                    self._save_episode_dataset(
+                        episodes=exploration_episodes,
+                        save_path=dest_data_file_path
+                    )
 
 
 if __name__ == "__main__":

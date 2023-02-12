@@ -1,8 +1,9 @@
 import os
-from typing import TYPE_CHECKING, Union, cast
+from typing import TYPE_CHECKING, Union, cast, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import bool_, int64, ndarray
 
 import habitat
 from habitat import EmbodiedTask
@@ -12,7 +13,9 @@ from habitat.config.default_structured_configs import (
     TopDownMapMeasurementConfig,
 )
 from habitat.core.agent import Agent
+from habitat.gym import make_gym_from_config
 from habitat.gym.gym_wrapper import flatten_dict
+from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.tasks.nav.nav import NavigationEpisode, TopDownMap
 from habitat.tasks.nav.shortest_path_follower import ShortestPathFollower
 from habitat.utils.render_wrapper import overlay_frame
@@ -21,6 +24,7 @@ from habitat.utils.visualizations.utils import (
     images_to_video,
     observations_to_image,
 )
+from habitat_baselines import PPOTrainer
 from habitat_baselines.utils.info_dict import extract_scalars_from_info
 from habitat_sim.utils import viz_utils as vut
 
@@ -30,6 +34,7 @@ from habitat_baselines.config.default import get_config as get_baselines_config
 import config.default_structured_configs  # noqa structured configs
 import habitat_extensions.habitat_lab.tasks.exp.exp # noqa ExplorationVisitedLocationsReward
 import habitat_extensions.habitat_lab.tasks.nav.nav # noqa TopDownMap
+import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
 
 if TYPE_CHECKING:
     from habitat.core.simulator import Observations
@@ -43,6 +48,22 @@ os.environ["HABITAT_SIM_LOG"] = "quiet"
 output_path = "output/examples/spf_topdown_map"
 if not os.path.exists(output_path):
     os.makedirs(output_path)
+
+
+class RandomAgent(habitat.Agent):
+    def reset(self) -> None:
+        pass
+
+    def act(self, observations: "Observations") -> Dict[str, int64]:
+        action = np.random.choice(
+            [
+                HabitatSimActions.move_forward,
+                HabitatSimActions.turn_left,
+                HabitatSimActions.turn_right,
+                HabitatSimActions.stop
+            ]
+        )
+        return action
 
 
 class ShortestPathFollowerAgent(Agent):
@@ -249,7 +270,59 @@ def example_exploration_vlr():
             vut.display_video(f"{output_path}/{video_name}.mp4")
 
 
+def example_exploration_vlr_2():
+    config = habitat.get_config(
+        config_path="config/exploration.yaml"
+    )
+    with make_gym_from_config(config) as env:
+        agent = RandomAgent()
+        num_episodes = 1
+        for _ in range(num_episodes):
+            observations, reward, done, info = env.reset(), 0, False, {}
+            agent.reset()
+
+            # # Get metrics
+            # info = env.get_info()
+            # info = flatten_dict(info)
+            # frame = observations_to_image(observations, info)
+            #
+            # frame = overlay_frame(frame, extract_scalars_from_info(info))
+            # vis_frames = [frame]
+            vis_frames = []
+
+            step = 1
+            while not done:
+                action = agent.act(observations)
+                if action is None:
+                    break
+
+                observations, reward, done, info = env.step(action)
+                info = flatten_dict(info)
+                frame = observations_to_image(observations, info)
+
+                frame = overlay_frame(frame, extract_scalars_from_info(info))
+                vis_frames.append(frame)
+
+                if step > 70:
+                    fog_of_war_mask = info["top_down_map.fog_of_war_mask"]
+                    plt.imshow(fog_of_war_mask)
+                    plt.show()
+
+                step += 1
+
+            current_episode = env.current_episode()
+            video_name = f"{os.path.basename(current_episode.scene_id)}_{current_episode.episode_id}"
+            images_to_video(
+                vis_frames, output_path, video_name, fps=6, quality=9
+            )
+            vis_frames.clear()
+            vut.display_video(f"{output_path}/{video_name}.mp4")
+
+
 if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
-    example_exploration_vlr()
+    example_exploration_vlr_2()
+
+
+# PPOTrainer
