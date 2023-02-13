@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Union, cast, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import bool_, int64, ndarray
+from habitat.core.environments import GymHabitatEnv
+from numpy import int64
 
 import habitat
 from habitat import EmbodiedTask
@@ -51,19 +52,30 @@ if not os.path.exists(output_path):
 
 
 class RandomAgent(habitat.Agent):
+    def __init__(self):
+        self._possible_actions = [
+            HabitatSimActions.move_forward,
+            HabitatSimActions.turn_left,
+            HabitatSimActions.turn_right,
+            HabitatSimActions.stop
+        ]
+
     def reset(self) -> None:
         pass
 
     def act(self, observations: "Observations") -> Dict[str, int64]:
-        action = np.random.choice(
-            [
-                HabitatSimActions.move_forward,
-                HabitatSimActions.turn_left,
-                HabitatSimActions.turn_right,
-                HabitatSimActions.stop
-            ]
-        )
+        action = np.random.choice(self._possible_actions)
         return action
+
+
+class RandomNoStopAgent(RandomAgent):
+    def __init__(self):
+        super().__init__()
+        self._possible_actions = [
+            HabitatSimActions.move_forward,
+            HabitatSimActions.turn_left,
+            HabitatSimActions.turn_right,
+        ]
 
 
 class ShortestPathFollowerAgent(Agent):
@@ -272,20 +284,21 @@ def example_exploration_vlr():
 
 def example_exploration_vlr_2():
     config = habitat.get_config(
-        config_path="config/exploration.yaml"
+        # config_path="config/exploration.yaml"
+        config_path="config/exploration_one_episode.yaml"
     )
     with make_gym_from_config(config) as env:
-        agent = RandomAgent()
+        agent = RandomNoStopAgent()
         num_episodes = 1
         for _ in range(num_episodes):
             observations, reward, done, info = env.reset(), 0, False, {}
             agent.reset()
 
-            # # Get metrics
+            # Get metrics
             # info = env.get_info()
             # info = flatten_dict(info)
             # frame = observations_to_image(observations, info)
-            #
+
             # frame = overlay_frame(frame, extract_scalars_from_info(info))
             # vis_frames = [frame]
             vis_frames = []
@@ -303,10 +316,10 @@ def example_exploration_vlr_2():
                 frame = overlay_frame(frame, extract_scalars_from_info(info))
                 vis_frames.append(frame)
 
-                if step > 70:
-                    fog_of_war_mask = info["top_down_map.fog_of_war_mask"]
-                    plt.imshow(fog_of_war_mask)
-                    plt.show()
+                # if step > 70:
+                #     fog_of_war_mask = info["top_down_map.fog_of_war_mask"]
+                #     plt.imshow(fog_of_war_mask)
+                #     plt.show()
 
                 step += 1
 
@@ -326,3 +339,4 @@ if __name__ == "__main__":
 
 
 # PPOTrainer
+# GymHabitatEnv

@@ -8,6 +8,7 @@ defaults:
   - _self_
 
 habitat:
+  seed: 1
   env_task: GymHabitatEnv
   environment:
     max_episode_steps: 500

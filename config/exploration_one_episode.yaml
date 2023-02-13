@@ -7,11 +7,17 @@ defaults:
   - /habitat/dataset/pointnav: habitat_test
   - _self_
 
+
 habitat:
   seed: 1
   env_task: GymHabitatEnv
   environment:
     max_episode_steps: 500
+    iterator_options:
+      group_by_scene: True
+      num_episode_sample: 1
+      shuffle: True
+      cycle: True
   simulator:
     agents:
       main_agent:
@@ -26,3 +32,5 @@ habitat:
     type: ExplorationStaticDataset
     split: train_10_percent
     data_path: data/datasets/exploration/hm3d/v1/{split}/{split}.json.gz
+    content_scenes:
+      - 5Poh4Qz68hd
