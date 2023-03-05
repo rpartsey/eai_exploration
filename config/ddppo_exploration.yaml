@@ -1,7 +1,7 @@
 # @package _global_
 
 defaults:
-  - /habitat: pointnav_test_depth
+  - /benchmark: exploration_hm3d_10pct_depth_1scene
   - /habitat_baselines: habitat_baselines_rl_config_base
   - _self_
 
@@ -9,16 +9,17 @@ habitat_baselines:
   verbose: False
   trainer_name: ddppo
   torch_gpu_id: 0
-  tensorboard_dir: output/baselines/pointnav/exp0/tb
-  video_dir: output/baselines/pointnav/exp0/video_dir
+  tensorboard_dir: output/baselines/exploration/exp0/tb
+  video_dir: output/baselines/exploration/exp0/video_dir
   test_episode_count: -1
-  eval_ckpt_path_dir: output/baselines/pointnav/exp0/new_checkpoints
+  eval_ckpt_path_dir: output/baselines/exploration/exp0/new_checkpoints
   num_environments: 16
-  checkpoint_folder: output/baselines/pointnav/exp0/new_checkpoints
+  checkpoint_folder: output/baselines/exploration/exp0/new_checkpoints
   num_updates: -1
   total_num_steps: 2.5e9
   log_interval: 10
-  num_checkpoints: 100
+  checkpoint_interval: 50
+  # num_checkpoints: 100
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True

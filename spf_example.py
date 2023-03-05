@@ -3,33 +3,26 @@ from typing import TYPE_CHECKING, Union, cast, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from habitat.core.environments import GymHabitatEnv
 from numpy import int64
 
 import habitat
-from habitat import EmbodiedTask
+import habitat.gym
 from habitat.config.default_structured_configs import (
     CollisionsMeasurementConfig,
     FogOfWarConfig,
     TopDownMapMeasurementConfig,
 )
 from habitat.core.agent import Agent
-from habitat.gym import make_gym_from_config
-from habitat.gym.gym_wrapper import flatten_dict
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.tasks.nav.nav import NavigationEpisode, TopDownMap
 from habitat.tasks.nav.shortest_path_follower import ShortestPathFollower
-from habitat.utils.render_wrapper import overlay_frame
 from habitat.utils.visualizations import maps
 from habitat.utils.visualizations.utils import (
     images_to_video,
-    observations_to_image,
+    observations_to_image, overlay_frame,
 )
-from habitat_baselines import PPOTrainer
 from habitat_baselines.utils.info_dict import extract_scalars_from_info
 from habitat_sim.utils import viz_utils as vut
-
-from habitat_baselines.config.default import get_config as get_baselines_config
 
 # registrations
 import config.default_structured_configs  # noqa structured configs
@@ -37,9 +30,12 @@ import habitat_extensions.habitat_lab.tasks.exp.exp # noqa ExplorationVisitedLoc
 import habitat_extensions.habitat_lab.tasks.nav.nav # noqa TopDownMap
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
 
+from config import get_config
+
 if TYPE_CHECKING:
     from habitat.core.simulator import Observations
     from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
+
 
 
 # Quiet the Habitat simulator logging
@@ -219,7 +215,7 @@ def example_top_down_map_measure():
 def example_exploration_vlr():
     # Create habitat config
     config = habitat.get_config(
-        config_path="config/exploration.yaml"
+        config_path="config/benchmark/exploration_hm3d_10pct_depth.yaml"
     )
     # Create dataset
     dataset = habitat.make_dataset(
@@ -258,7 +254,6 @@ def example_exploration_vlr():
                 # Step in the environment
                 observations = env.step(action)
                 info = env.get_metrics()
-                info = flatten_dict(info)
                 frame = observations_to_image(observations, info)
 
                 frame = overlay_frame(frame, extract_scalars_from_info(info))
@@ -283,11 +278,11 @@ def example_exploration_vlr():
 
 
 def example_exploration_vlr_2():
-    config = habitat.get_config(
-        # config_path="config/exploration.yaml"
-        config_path="config/exploration_one_episode.yaml"
+    config = get_config(
+        # config_path="config/exploration_hm3d_10pct_depth.yaml"
+        config_path="config/benchmark/exploration_hm3d_10pct_depth_1scene_1episode.yaml"
     )
-    with make_gym_from_config(config) as env:
+    with habitat.gym.make_gym_from_config(config) as env:
         agent = RandomNoStopAgent()
         num_episodes = 1
         for _ in range(num_episodes):
@@ -310,7 +305,6 @@ def example_exploration_vlr_2():
                     break
 
                 observations, reward, done, info = env.step(action)
-                info = flatten_dict(info)
                 frame = observations_to_image(observations, info)
 
                 frame = overlay_frame(frame, extract_scalars_from_info(info))

@@ -25,6 +25,10 @@ class TopDownMap(TopDownMapBase):
             self._map_resolution, sim=self._sim
         )
 
+    @property
+    def meters_per_pixel(self):
+        return self._meters_per_pixel
+
     def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
         return self.cls_uuid
 

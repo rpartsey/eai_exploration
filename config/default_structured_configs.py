@@ -1,12 +1,11 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Optional
 
 from habitat.config.default_structured_configs import (
     MeasurementConfig,
     TopDownMapMeasurementConfig as TopDownMapMeasurementConfigBase
 )
 from hydra.core.config_store import ConfigStore
-from omegaconf import II, MISSING
 
 
 @dataclass
