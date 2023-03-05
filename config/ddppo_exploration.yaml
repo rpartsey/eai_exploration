@@ -8,18 +8,18 @@ defaults:
 habitat_baselines:
   verbose: False
   trainer_name: ddppo
-  torch_gpu_id: 0
+  torch_gpu_id: 1
   tensorboard_dir: output/baselines/exploration/exp0/tb
   video_dir: output/baselines/exploration/exp0/video_dir
   test_episode_count: -1
   eval_ckpt_path_dir: output/baselines/exploration/exp0/new_checkpoints
-  num_environments: 16
+  num_environments: 10
   checkpoint_folder: output/baselines/exploration/exp0/new_checkpoints
   num_updates: -1
   total_num_steps: 2.5e9
   log_interval: 10
   checkpoint_interval: 50
-  # num_checkpoints: 100
+  num_checkpoints: -1
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True

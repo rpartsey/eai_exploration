@@ -8,7 +8,7 @@ defaults:
 habitat_baselines:
   verbose: False
   trainer_name: ddppo
-  torch_gpu_id: 0
+  torch_gpu_id: 1
   tensorboard_dir: output/baselines/pointnav/exp0/tb
   video_dir: output/baselines/pointnav/exp0/video_dir
   test_episode_count: -1
