@@ -29,6 +29,7 @@ import config.default_structured_configs  # noqa structured configs
 import habitat_extensions.habitat_lab.tasks.exp.exp # noqa ExplorationVisitedLocationsReward
 import habitat_extensions.habitat_lab.tasks.nav.nav # noqa TopDownMap
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
+from agents.exploration_agent import PPOAgent
 
 from config import get_config
 
@@ -234,7 +235,6 @@ def example_exploration_vlr():
 
             # Get metrics
             info = env.get_metrics()
-            info = flatten_dict(info)
             # Concatenate RGB-D observation and topdowm map into one image
             frame = observations_to_image(observations, info)
 
@@ -326,10 +326,54 @@ def example_exploration_vlr_2():
             vut.display_video(f"{output_path}/{video_name}.mp4")
 
 
+def example_exploration_vlr_3():
+    model_path = "/Users/rpartsey/work/research/embodied_ai/projects/rearrange/experiments/exploration/exp1/checkpoints/ckpt.30.pth"
+    config = get_config(
+        config_path="ddppo_exploration.yaml",
+        overrides=[
+            "+pth_gpu_id=0",
+            f"+model_path={model_path}",
+            "+random_seed=1",
+        ]
+    )
+
+    with habitat.gym.make_gym_from_config(config) as env:
+        agent = PPOAgent(config)
+        num_episodes = 1
+        for _ in range(num_episodes):
+            observations, reward, done, info = env.reset(), 0, False, {}
+            agent.reset()
+
+            vis_frames = []
+
+            step = 1
+            while not done:
+                action = agent.act(observations)
+                if action is None:
+                    break
+
+                observations, reward, done, info = env.step(action["action"])
+                frame = observations_to_image(observations, info)
+
+                frame = overlay_frame(frame, extract_scalars_from_info(info))
+                vis_frames.append(frame)
+
+                step += 1
+
+            current_episode = env.current_episode()
+            video_name = f"{os.path.basename(current_episode.scene_id)}_{current_episode.episode_id}"
+            images_to_video(
+                vis_frames, output_path, video_name, fps=6, quality=9
+            )
+            vis_frames.clear()
+            vut.display_video(f"{output_path}/{video_name}.mp4")
+
+
 if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
-    example_exploration_vlr_2()
+    # example_exploration_vlr_2()
+    example_exploration_vlr_3()
 
 
 # PPOTrainer

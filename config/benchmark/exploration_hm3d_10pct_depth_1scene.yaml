@@ -11,7 +11,7 @@ habitat:
   seed: 1
   env_task: GymHabitatEnv
   environment:
-    max_episode_steps: 300
+    max_episode_steps: 500
     iterator_options:
       group_by_scene: True
       num_episode_sample: -1
