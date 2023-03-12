@@ -14,7 +14,7 @@ from habitat.config.default_structured_configs import (
 )
 from habitat.core.agent import Agent
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
-from habitat.tasks.nav.nav import NavigationEpisode, TopDownMap
+from habitat.tasks.nav.nav import NavigationEpisode
 from habitat.tasks.nav.shortest_path_follower import ShortestPathFollower
 from habitat.utils.visualizations import maps
 from habitat.utils.visualizations.utils import (
@@ -24,11 +24,12 @@ from habitat.utils.visualizations.utils import (
 from habitat_baselines.utils.info_dict import extract_scalars_from_info
 from habitat_sim.utils import viz_utils as vut
 
-# registrations
-import config.default_structured_configs  # noqa structured configs
-import habitat_extensions.habitat_lab.tasks.exp.task # noqa ExplorationVisitedLocationsReward
-import habitat_extensions.habitat_lab.tasks.nav.measures # noqa TopDownMap
-import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
+# registration:
+import config.default_structured_configs  # noqa
+import habitat_extensions.habitat_lab.tasks.exp.task # noqa
+import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
+import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
+import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
 from agents.exploration_agent import PPOAgent
 
 from config import get_config

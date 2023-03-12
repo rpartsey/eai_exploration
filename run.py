@@ -2,14 +2,14 @@ from habitat.config.default_structured_configs import register_hydra_plugin, Hab
 from habitat_baselines.config.default_structured_configs import HabitatBaselinesConfigPlugin
 from habitat_baselines.run import main
 
-from config import get_config, MyConfigPlugin
-from habitat_extensions.habitat_lab.tasks.exp.task import ExplorationTask  # noqa (register ExplorationTask)
+from config import MyConfigPlugin
 
-# registrations
-import config.default_structured_configs  # noqa structured configs
-import habitat_extensions.habitat_lab.tasks.exp.task # noqa ExplorationVisitedLocationsReward
-import habitat_extensions.habitat_lab.tasks.nav.measures # noqa TopDownMap
-import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
+# registration:
+import config.default_structured_configs  # noqa
+import habitat_extensions.habitat_lab.tasks.exp.task # noqa
+import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
+import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
+import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
 
 
 if __name__ == "__main__":

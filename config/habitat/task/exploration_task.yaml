@@ -10,6 +10,7 @@ defaults:
   - measurements:
     - top_down_map
     - exploration_vlr
+    - scene_coverage
     - exploration_success
   - _self_
 

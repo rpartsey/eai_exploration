@@ -1,20 +1,16 @@
 import argparse
 
-# from habitat_baselines.config.default import get_config
-# from habitat_baselines.rl.ddppo.policy import PointNavResNetPolicy
 import habitat
 
 from agents.exploration_agent import PPOAgent
 from config import get_config
 
-from config import get_config, MyConfigPlugin
-from habitat_extensions.habitat_lab.tasks.exp.task import ExplorationTask  # noqa (register ExplorationTask)
-
-# registrations
-import config.default_structured_configs  # noqa structured configs
-import habitat_extensions.habitat_lab.tasks.exp.task # noqa ExplorationVisitedLocationsReward
-import habitat_extensions.habitat_lab.tasks.nav.measures # noqa TopDownMap
-import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
+# registration:
+import config.default_structured_configs  # noqa
+import habitat_extensions.habitat_lab.tasks.exp.task # noqa
+import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
+import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
+import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
 
 
 def main():
