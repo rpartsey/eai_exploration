@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Tuple, Union
+from typing import Any
 
 import numpy as np
 from habitat.core.registry import registry

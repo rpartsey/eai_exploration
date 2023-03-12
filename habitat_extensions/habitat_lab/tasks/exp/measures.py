@@ -1,17 +1,12 @@
-import numpy as np
-from typing import Any, Optional, Dict
-from omegaconf import DictConfig
+from typing import Any, Optional
 
-from habitat import EmbodiedTask, Measure
-from habitat.config import read_write
-from habitat.config.default import get_agent_config
-from habitat.core.registry import registry
-from habitat.core.dataset import Dataset, Episode
-from habitat.core.simulator import Simulator
+import numpy as np
+from habitat import registry, Measure
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat.utils.visualizations import maps
-# from habitat.tasks.nav.nav import TopDownMap
-from habitat_extensions.habitat_lab.tasks.nav.nav import TopDownMap
+from omegaconf import DictConfig
+
+from habitat_extensions.habitat_lab.tasks.nav.measures import TopDownMap
 
 
 @registry.register_measure
@@ -101,32 +96,3 @@ class ExplorationSuccess(Measure):
         )
 
         self._metric = 1.0 if success else 0
-
-
-@registry.register_task(name="Exp-v0")
-class ExplorationTask(EmbodiedTask):
-    def __init__(
-        self,
-        config: DictConfig,
-        sim: Simulator,
-        dataset: Optional[Dataset] = None,
-    ) -> None:
-        super().__init__(config=config, sim=sim, dataset=dataset)
-
-    def overwrite_sim_config(self, config: Any, episode: Episode) -> Any:
-        with read_write(config):
-            config.simulator.scene = episode.scene_id
-            if (
-                episode.start_position is not None
-                and episode.start_rotation is not None
-            ):
-                agent_config = get_agent_config(config.simulator)
-                agent_config.start_position = episode.start_position
-                agent_config.start_rotation = [
-                    float(k) for k in episode.start_rotation
-                ]
-                agent_config.is_set_start_state = True
-        return config
-
-    def _check_episode_is_active(self, *args: Any, **kwargs: Any) -> bool:
-        return not getattr(self, "is_stop_called", False)

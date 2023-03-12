@@ -26,8 +26,8 @@ from habitat_sim.utils import viz_utils as vut
 
 # registrations
 import config.default_structured_configs  # noqa structured configs
-import habitat_extensions.habitat_lab.tasks.exp.exp # noqa ExplorationVisitedLocationsReward
-import habitat_extensions.habitat_lab.tasks.nav.nav # noqa TopDownMap
+import habitat_extensions.habitat_lab.tasks.exp.task # noqa ExplorationVisitedLocationsReward
+import habitat_extensions.habitat_lab.tasks.nav.measures # noqa TopDownMap
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa register Exploration datasets
 from agents.exploration_agent import PPOAgent
 
