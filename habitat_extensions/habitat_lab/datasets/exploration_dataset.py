@@ -135,6 +135,23 @@ class ExplorationStaticDataset(Dataset):
         scenes.sort()
         return scenes
 
+    @staticmethod
+    def check_config_paths_exist(config: "DictConfig") -> bool:
+        return os.path.exists(
+            config.data_path.format(split=config.split)
+        ) and os.path.exists(config.scenes_dir)
+
+    @staticmethod
+    def scene_from_scene_path(scene_path: str) -> str:
+        r"""Helper method to get the scene name from an episode.
+
+        :param scene_path: The path to the scene, assumes this is formatted
+                            ``/path/to/<scene_name>.<ext>``
+
+        :return: <scene_name> from the path
+        """
+        return os.path.basename(scene_path).split(".")[0]
+
 
 @registry.register_dataset(name="ExplorationDynamicDataset")
 class ExplorationDynamicDataset(Dataset):
