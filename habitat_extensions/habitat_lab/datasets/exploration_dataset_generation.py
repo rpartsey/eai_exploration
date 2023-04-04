@@ -75,6 +75,10 @@ class PointNavToExplorationDatasetConverter:
                 )
 
             else:
+                self._create_dirs(
+                    dirs_path=f"{self._exploration_dataset_path}/{split}",
+                    exist_ok=True
+                )
                 shutil.copyfile(
                     f"{self._pointnav_dataset_path}/{split}/{split}.json.gz",
                     f"{self._exploration_dataset_path}/{split}/{split}.json.gz"
