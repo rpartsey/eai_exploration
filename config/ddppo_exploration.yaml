@@ -1,19 +1,19 @@
 # @package _global_
 
 defaults:
-  - /benchmark: exploration_hm3d_10pct_depth
+  - /benchmark: exploration_hm3d_10pct_depth_1scene_1episode
   - /habitat_baselines: habitat_baselines_rl_config_base
   - _self_
 
 habitat_baselines:
   verbose: False
   trainer_name: ddppo
-  torch_gpu_id: 1
+  torch_gpu_id: 0
   tensorboard_dir: output/baselines/exploration/exploration_hm3d_10pct_depth_smoke/tb
   video_dir: output/baselines/exploration/exploration_hm3d_10pct_depth_smoke/video_dir
   test_episode_count: -1
   eval_ckpt_path_dir: output/baselines/exploration/exploration_hm3d_10pct_depth_smoke/new_checkpoints
-  num_environments: 10
+  num_environments: 1
   checkpoint_folder: output/baselines/exploration/exploration_hm3d_10pct_depth_smoke/new_checkpoints
   num_updates: -1
   total_num_steps: 2.5e9

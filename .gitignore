@@ -137,3 +137,4 @@ dmypy.json
 # Exclude data from source control by default
 /data
 /output
+/outputs
