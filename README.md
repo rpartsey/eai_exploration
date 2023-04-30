@@ -6,7 +6,7 @@
 
 Packages:
 - habitat-sim
-- habitat-lab
+- habitat-lab (install from [this](https://github.com/rpartsey/habitat-lab/tree/main_keep_nonscalar_metrics) branch or do the same changes in your habita-lab fork yoursefl)
 - (and their dependencies)
 
 Datasets:
