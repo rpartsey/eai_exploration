@@ -10,6 +10,7 @@ import habitat_extensions.habitat_lab.tasks.exp.task # noqa
 import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
 import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
+import habitat_extensions.habitat_lab.tasks.exp.nav # noqa 
 
 
 if __name__ == "__main__":
