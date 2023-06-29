@@ -53,15 +53,14 @@ def sample_random_seed():
 
 class PPOAgent(Agent):
     def __init__(self, config: DictConfig) -> None:
-        depth_sensor_config = config.habitat.simulator.agents.main_agent.sim_sensors.depth_sensor
-        obs_space = {
-            "depth": spaces.Box(
+        sensor_config = config.habitat.simulator.agents.main_agent.sim_sensors
+        obs_space = dict([(sensor[:-7], spaces.Box(
                 low=0,
                 high=1,
-                shape=(depth_sensor_config.height, depth_sensor_config.width, 1),
-                dtype=np.float32,
-            ),
-        }
+                shape=(sensor_config[sensor]['height'], 
+                       sensor_config[sensor]['width'], 
+                       3 if sensor == 'rgb_sensor' else 1),
+        )) for sensor in sensor_config])
         obs_space = spaces.Dict(obs_space)
 
         self.obs_transforms = get_active_obs_transforms(config)
@@ -102,13 +101,7 @@ class PPOAgent(Agent):
         if config.model_path:
             ckpt = torch.load(config.model_path, map_location=self.device)
             #  Filter only actor_critic weights
-            self.actor_critic.load_state_dict(
-                {
-                    k[len("actor_critic."):]: v
-                    for k, v in ckpt["state_dict"].items()
-                    if "actor_critic" in k
-                }
-            )
+            self.actor_critic.load_state_dict(ckpt["state_dict"])
 
         else:
             habitat.logger.error(
