@@ -21,11 +21,13 @@ from habitat.utils.visualizations.utils import (
     images_to_video,
     observations_to_image, overlay_frame,
 )
+from habitat_extensions.habitat_lab.utils.visualisations.utils import observations_to_image, overlay_frame
 from habitat_baselines.utils.info_dict import extract_scalars_from_info
 from habitat_sim.utils import viz_utils as vut
 
 # registration:
 import config.default_structured_configs  # noqa
+import habitat_extensions.habitat_lab.tasks.exp.nav # noqa
 import habitat_extensions.habitat_lab.tasks.exp.task # noqa
 import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
 import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
@@ -381,12 +383,16 @@ if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
     # example_exploration_vlr_2()
-    # example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_depth_smoke_5000/new_checkpoints/ckpt.49.pth",
-    #                           "exploration_hm3d_10pct_depth_1scene_1episode")
-    # example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgb_smoke_5000/new_checkpoints/ckpt.49.pth",
-    #                           "exploration_hm3d_10pct_rgb_1scene_1episode")
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbd_smoke/new_checkpoints/ckpt.30.pth",
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_depth_smoke_5000/new_checkpoints/ckpt.49.pth",
+                              "exploration_hm3d_10pct_depth_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgb_smoke_5000/new_checkpoints/ckpt.49.pth",
+                              "exploration_hm3d_10pct_rgb_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbd_smoke_5000/new_checkpoints/ckpt.49.pth",
                               "exploration_hm3d_10pct_rgbd_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_gt_smoke_5000/new_checkpoints/ckpt.10.pth",
+                              "exploration_hm3d_10pct_gt_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbgt_smoke_5000/new_checkpoints/ckpt.0.pth",
+                              "exploration_hm3d_10pct_rgbgt_1scene_1episode")
 
 
 # PPOTrainer
