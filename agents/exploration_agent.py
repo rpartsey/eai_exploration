@@ -61,6 +61,16 @@ class PPOAgent(Agent):
                        sensor_config[sensor]['width'], 
                        3 if sensor == 'rgb_sensor' else 1),
         )) for sensor in sensor_config])
+        
+        # Add lab sensors if needed
+        for lab_sensor in config.habitat.task.lab_sensors:
+            obs_space[lab_sensor[:-7]] = spaces.Box(
+                    low=np.finfo(np.float32).min,
+                    high=np.finfo(np.float32).max,
+                    shape=(2,),
+                    dtype=np.float32,
+                )
+        
         obs_space = spaces.Dict(obs_space)
 
         self.obs_transforms = get_active_obs_transforms(config)
