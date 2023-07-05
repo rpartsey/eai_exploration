@@ -32,6 +32,8 @@ import habitat_extensions.habitat_lab.tasks.exp.task # noqa
 import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
 import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
+import habitat_extensions.habitat_baselines.rl.ddppo.policy.resnet_policy # noqa 
+import habitat_extensions.habitat_lab.config.default_structured_configs # noqa
 from agents.exploration_agent import PPOAgent
 
 from config import get_config
@@ -383,16 +385,8 @@ if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
     # example_exploration_vlr_2()
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_depth_smoke_5000/new_checkpoints/ckpt.49.pth",
-                              "exploration_hm3d_10pct_depth_1scene_1episode")
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgb_smoke_5000/new_checkpoints/ckpt.49.pth",
-                              "exploration_hm3d_10pct_rgb_1scene_1episode")
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbd_smoke_5000/new_checkpoints/ckpt.49.pth",
-                              "exploration_hm3d_10pct_rgbd_1scene_1episode")
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_gt_smoke_5000/new_checkpoints/ckpt.10.pth",
-                              "exploration_hm3d_10pct_gt_1scene_1episode")
-    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbgt_smoke_5000/new_checkpoints/ckpt.0.pth",
-                              "exploration_hm3d_10pct_rgbgt_1scene_1episode")
+    example_exploration_vlr_3("/home/vovak/Documents/Habitat/exploration/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_depth_smoke/new_checkpoints/latest.pth",
+                               "exploration_hm3d_10pct_rgbgtstep_1scene_1episode.yaml")
 
 
 # PPOTrainer

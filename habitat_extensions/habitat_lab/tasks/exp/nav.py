@@ -60,7 +60,7 @@ class IntegratedPointGoalGPSAndCompassSensor(PointGoalSensor):
 @registry.register_sensor(name="StepCountSensor")
 class StepCountSensor(PointGoalSensor):
     r"""Sensor that returns the current step count."""
-    cls_uuid: str = "step_count_sensor"
+    cls_uuid: str = "step_count"
 
     def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
         return self.cls_uuid
@@ -68,6 +68,7 @@ class StepCountSensor(PointGoalSensor):
     def get_observation(
         self, observations, episode, *args: Any, **kwargs: Any
     ):
-        if kwargs['task'].measurements.measures['top_down_map']._step_count:
-            return kwargs['task'].measurements.measures['top_down_map']._step_count
-        return 0
+        step_count = kwargs['task'].measurements.measures['top_down_map']._step_count
+        if step_count:
+            return np.array([step_count, step_count], dtype=np.float32)
+        return np.array([0, 0], dtype=np.float32)
