@@ -11,6 +11,9 @@ import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
 import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
 import habitat_extensions.habitat_lab.datasets.exploration_dataset # noqa
 import habitat_extensions.habitat_lab.tasks.exp.nav # noqa 
+import habitat_extensions.habitat_baselines.rl.ddppo.policy.resnet_policy # noqa 
+import habitat_extensions.habitat_lab.config.default_structured_configs # noqa
+import habitat_extensions.habitat_baselines.rl.ppo.single_agent_access_mgr # noqa
 
 
 if __name__ == "__main__":

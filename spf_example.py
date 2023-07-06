@@ -21,11 +21,13 @@ from habitat.utils.visualizations.utils import (
     images_to_video,
     observations_to_image, overlay_frame,
 )
+from habitat_extensions.habitat_lab.utils.visualisations.utils import observations_to_image, overlay_frame
 from habitat_baselines.utils.info_dict import extract_scalars_from_info
 from habitat_sim.utils import viz_utils as vut
 
 # registration:
 import config.default_structured_configs  # noqa
+import habitat_extensions.habitat_lab.tasks.exp.nav # noqa
 import habitat_extensions.habitat_lab.tasks.exp.task # noqa
 import habitat_extensions.habitat_lab.tasks.exp.measures # noqa
 import habitat_extensions.habitat_lab.tasks.nav.measures # noqa
@@ -327,14 +329,15 @@ def example_exploration_vlr_2():
             vut.display_video(f"{output_path}/{video_name}.mp4")
 
 
-def example_exploration_vlr_3():
-    model_path = "/Users/rpartsey/work/research/embodied_ai/projects/rearrange/experiments/exploration/exp1/checkpoints/ckpt.30.pth"
+def example_exploration_vlr_3(model_path, benchmark):
+    # Added benchmark override for specifying sensors
     config = get_config(
         config_path="ddppo_exploration.yaml",
         overrides=[
             "+pth_gpu_id=0",
             f"+model_path={model_path}",
             "+random_seed=1",
+            f"benchmark={benchmark}"
         ]
     )
 
@@ -349,6 +352,11 @@ def example_exploration_vlr_3():
 
             step = 1
             while not done:
+                # Change type from uint8 to float32 for rgb sensor due to 
+                # RuntimeError: "avg_pool2d_out_cuda_frame" not implemented for 'Byte'
+                # Also normalise rgb to values from 0 to 1
+                if 'rgb' in observations:
+                    observations['rgb'] = observations['rgb'].astype(np.float32) / 255.0
                 action = agent.act(observations)
                 if action is None:
                     break
@@ -362,11 +370,12 @@ def example_exploration_vlr_3():
                 step += 1
 
             current_episode = env.current_episode()
-            video_name = f"{os.path.basename(current_episode.scene_id)}_{current_episode.episode_id}"
+            # Added sensor configuration in the video name
+            video_name = f"{os.path.basename(current_episode.scene_id)}_{current_episode.episode_id}_{'_'.join(sorted([str(x) for x in observations]))}"
             images_to_video(
                 vis_frames, output_path, video_name, fps=6, quality=9
             )
-            vis_frames.clear()
+            vis_frames.clear()        
             vut.display_video(f"{output_path}/{video_name}.mp4")
 
 
@@ -374,7 +383,16 @@ if __name__ == "__main__":
     # example_get_topdown_map()
     # example_top_down_map_measure()
     # example_exploration_vlr_2()
-    example_exploration_vlr_3()
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_depth_smoke_5000/new_checkpoints/ckpt.49.pth",
+                              "exploration_hm3d_10pct_depth_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgb_smoke_5000/new_checkpoints/ckpt.49.pth",
+                              "exploration_hm3d_10pct_rgb_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbd_smoke_5000/new_checkpoints/ckpt.49.pth",
+                              "exploration_hm3d_10pct_rgbd_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_gt_smoke_5000/new_checkpoints/ckpt.10.pth",
+                              "exploration_hm3d_10pct_gt_1scene_1episode")
+    example_exploration_vlr_3("/home/kuzhum/eai_exploration/output/baselines/exploration/exploration_hm3d_10pct_rgbgt_smoke_5000/new_checkpoints/ckpt.0.pth",
+                              "exploration_hm3d_10pct_rgbgt_1scene_1episode")
 
 
 # PPOTrainer
