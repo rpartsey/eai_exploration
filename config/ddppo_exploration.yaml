@@ -25,7 +25,8 @@ habitat_baselines:
   force_torch_single_threaded: True
   rl:
     policy:
-      name: PointNavResNetPolicy
+      main_agent:
+        name: "PointNavResNetPolicy"
     ppo:
       # ppo params
       clip_param: 0.2
