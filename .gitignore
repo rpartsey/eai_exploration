@@ -138,3 +138,6 @@ dmypy.json
 /data
 /output
 /outputs
+
+# VS Code
+.vscode/
