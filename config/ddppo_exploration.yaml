@@ -23,6 +23,11 @@ habitat_baselines:
   # Force PyTorch to be single threaded as
   # this improves performance considerably
   force_torch_single_threaded: True
+  eval:
+    split: "val"
+    use_ckpt_config: True
+    should_load_ckpt: True
+    video_option: ["disk"]
   rl:
     policy:
       main_agent:

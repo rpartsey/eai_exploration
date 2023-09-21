@@ -24,6 +24,19 @@ python habitat_extensions/habitat_lab/datasets/exploration_dataset_generation.py
 --exploration_dataset_path path/to/data/datasets/exploration/hm3d/v1 \
 --splits train_10_percent
 ```
+or if you are using Visual Studio Code:
+```json
+{
+    "type": "python",
+    "request": "launch",
+    "program": "habitat_extensions/habitat_lab/datasets/exploration_dataset_generation.py",
+    "args": [
+        "--pointnav_dataset_path", "data/datasets/pointnav/hm3d/v1",
+        "--exploration_dataset_path", "data/datasets/exploration/hm3d/v1",
+        "--splits", "train_10_percent"
+    ]
+}
+```
 
 3\. Run exploration DD-PPO training:
 ```bash
@@ -46,3 +59,23 @@ Expected output:
 2023-04-28 11:44:26,018 update: 10      env-time: 5.363s        pth-time: 10.434s       frames: 1280
 2023-04-28 11:44:26,018 Average window size: 10  exploration_success: 0.000  exploration_vlr: 1.339  reward: 6.465  scene_coverage: 0.082
 ```
+or if you are using Visual Studio Code:
+```json
+{
+    "type": "python",
+    "request": "launch",
+    "program": "run.py",
+    "env": {
+        "MAGNUM_LOG": "quiet",
+        "HABITAT_SIM_LOG": "quiet",
+    },
+    "args": [
+        "--config-name", "ddppo_exploration.yaml",
+        "benchmark=exploration_hm3d_10pct_depth_1scene_1episode",
+        "habitat_baselines.torch_gpu_id=0",
+        "habitat_baselines.num_environments=1",
+        "habitat_baselines.evaluate=False"
+    ]
+}
+```
+Note, if you are using Mac you may have problems with spawning processes by VectorEnv. In this case, you can use HABITAT_ENV_DEBUG=1 environment variable to run training using ThreadedVectorEnv.
