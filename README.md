@@ -6,7 +6,7 @@
 
 Packages:
 - habitat-sim
-- habitat-lab (install from [this](https://github.com/rpartsey/habitat-lab/tree/rpartsey/train_with_non_scalar_metrics) branch or do the same changes as in [this](https://github.com/facebookresearch/habitat-lab/commit/ff2fb15a89ba80172ec8d16c510f0c782f0d6703) commit in your habita-lab fork yoursefl)
+- habitat-lab (install in editable mode from [this](https://github.com/rpartsey/habitat-lab/tree/eai_exploration) branch)
 - (and their dependencies)
 
 Datasets:
