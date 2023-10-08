@@ -73,6 +73,7 @@ class SceneCoverage(Measure):
         self._topdown_map_measure = task.measurements.measures[TopDownMap.cls_uuid]
         topdown_map_metric = self._topdown_map_measure.get_metric()
         self._scene_area = (topdown_map_metric["map"] == maps.MAP_VALID_POINT).sum()
+        self.update_metric(episode, task, *args, **kwargs)
 
     def update_metric(self, episode, task, *args: Any, **kwargs):
         topdown_map_metric = self._topdown_map_measure.get_metric()
