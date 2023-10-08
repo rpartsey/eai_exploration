@@ -1,0 +1,34 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/task: exploration_task
+  - /habitat/simulator/agents@habitat.simulator.agents.main_agent: depth_agent  # agent_base depth_agent rgb_agent rgbd_agent
+  - /habitat/dataset: dataset_config_schema
+  - _self_
+
+habitat:
+  seed: 1
+  env_task: GymHabitatEnv
+  environment:
+    max_episode_steps: 500
+    iterator_options:
+      group_by_scene: True
+      num_episode_sample: -1
+      shuffle: True
+      cycle: True
+  simulator:
+    habitat_sim_v0:
+      gpu_device_id: 0
+    agents:
+      main_agent:
+        sim_sensors:
+          depth_sensor:
+            width: 256
+            height: 256
+  dataset:
+    type: ExplorationStaticDataset
+    split: train_10_percent
+    data_path: data/datasets/exploration/hm3d/v1/{split}/{split}.json.gz
+    content_scenes:
+      - 5Poh4Qz68hd
