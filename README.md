@@ -5,8 +5,8 @@
 ### Requitements
 
 Packages:
-- habitat-sim
-- habitat-lab (install in editable mode from [this](https://github.com/rpartsey/habitat-lab/tree/eai_exploration) branch)
+- habitat-sim (==0.3.0, from this [commit](https://github.com/facebookresearch/habitat-sim/commit/dfb388e29e5e1f25da4b576305e85bdc0be140b8))
+- habitat-lab (==0.3.0, install in editable mode from [this](https://github.com/rpartsey/habitat-lab/tree/eai_exploration) branch)
 - (and their dependencies)
 
 Datasets:
