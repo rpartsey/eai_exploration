@@ -4,12 +4,17 @@
 
 ### Requitements
 
-Packages:
+**Packages**
+
+Core:
 - habitat-sim (==0.3.0, from this [commit](https://github.com/facebookresearch/habitat-sim/commit/dfb388e29e5e1f25da4b576305e85bdc0be140b8))
 - habitat-lab (==0.3.0, install in editable mode from [this](https://github.com/rpartsey/habitat-lab/tree/eai_exploration) branch)
 - (and their dependencies)
 
-Datasets:
+Third party:
+- eai-vc (install from [this](https://github.com/facebookresearch/eai-vc/commit/76fe35e87b1937168f1ec4b236e863451883eaf3) commit) `cd eai-cv && pip install -e ./vc_models`
+
+**Datasets**
 - HM3D [scenes dataset](https://aihabitat.org/datasets/hm3d/). Note, it can be also downloaded using habitat-sim [datasets_download.py](https://github.com/facebookresearch/habitat-sim/blob/main/src_python/habitat_sim/utils/datasets_download.py) utility: `python -m habitat_sim.utils.datasets_download --uids hm3d --data-path path/to/data/`
 - HM3D PointGoal Navigation	[task dataset](https://github.com/facebookresearch/habitat-lab/blob/main/DATASETS.md)
 
