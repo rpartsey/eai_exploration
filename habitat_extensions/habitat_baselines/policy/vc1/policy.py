@@ -4,7 +4,7 @@
 # This source code is licensed under the CC-BY-NC license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 from gym import spaces
@@ -16,7 +16,6 @@ from habitat_baselines.rl.models.rnn_state_encoder import (
     build_rnn_state_encoder,
 )
 from habitat_baselines.rl.ppo import Net, NetPolicy
-from habitat_baselines.utils.common import get_num_actions
 
 from .vc1_encoder import VC1Encoder
 
@@ -26,8 +25,7 @@ class VC1Net(Net):
         self,
         observation_space: spaces.Dict,
         action_space,
-        input_image_size,
-        backbone_config,
+        vc_model_name,
         hidden_size: int,
         rnn_type: str,
         num_recurrent_layers: int,
@@ -41,60 +39,43 @@ class VC1Net(Net):
     ):
         super().__init__()
 
+        freeze_backbone = True
+        freeze_batchnorm = True
+
         rnn_input_size = 0
 
         # visual encoder
+        assert "rgb" in observation_space.spaces
 
         if (use_augmentations and run_type == "train") or (
             use_augmentations_test_time and run_type == "eval"
         ):
             use_augmentations = True
 
-        if "robot_head_rgb" in observation_space.spaces.keys():
-            self.visual_encoder = VC1Encoder(
-                backbone_config=backbone_config,
-                image_size=input_image_size,
-                global_pool=global_pool,
-                use_cls=use_cls,
-                use_augmentations=use_augmentations,
-                freeze_backbone=freeze_backbone,
-            )
+        self.visual_encoder = VC1Encoder(vc_model_name=vc_model_name)
 
-            self.visual_fc = nn.Sequential(
-                nn.Flatten(),
-                nn.Linear(self.visual_encoder.output_size, hidden_size),
-                nn.ReLU(True),
-            )
+        # freeze backbone
+        if freeze_backbone:
+            # Freeze all backbone
+            for p in self.visual_encoder.backbone.parameters():
+                p.requires_grad = False
+            if freeze_batchnorm:
+                self.visual_encoder.backbone = convert_frozen_batchnorm(
+                    self.visual_encoder.backbone
+                )
 
-            # freeze backbone
-            if freeze_backbone:
-                # Freeze all backbone
-                for p in self.visual_encoder.backbone.parameters():
-                    p.requires_grad = False
-                if freeze_batchnorm:
-                    self.visual_encoder.backbone = convert_frozen_batchnorm(
-                        self.visual_encoder.backbone
-                    )
+        # TODO rpartsey: add compression layer
+        self.visual_fc = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(self.visual_encoder.output_size, hidden_size),
+            nn.ReLU(True),
+        )
 
-            rnn_input_size += hidden_size
+        rnn_input_size += hidden_size
 
-        # previous action embeddings
-        # NOTE(Sergio): Actions are continuous, for discrete use action_space.n
-        # and an embedding layer with action_space.n + 1
-        num_actions = get_num_actions(action_space)
-        self.prev_action_embedding = nn.Linear(num_actions, 32)
+        # previous action embedding
+        self.prev_action_embedding = nn.Embedding(action_space.n + 1, 32)
         rnn_input_size += 32
-
-        # State information
-        fuse_keys = sorted(observation_space.spaces.keys())
-        self._fuse_keys_1d: List[str] = [
-            k for k in fuse_keys if len(observation_space.spaces[k].shape) == 1
-        ]
-        if len(self._fuse_keys_1d) != 0:
-            rnn_input_size += sum(
-                observation_space.spaces[k].shape[0]
-                for k in self._fuse_keys_1d
-            )
 
         # state encoder
         self.state_encoder = build_rnn_state_encoder(
@@ -125,50 +106,40 @@ class VC1Net(Net):
     def num_recurrent_layers(self):
         return self.state_encoder.num_recurrent_layers
 
+    @property
+    def recurrent_hidden_size(self):
+        return self._hidden_size
+
     def forward(
         self,
         observations: Dict[str, torch.Tensor],
         rnn_hidden_states,
         prev_actions,
         masks,
-        rnn_build_seq_info: Optional[Dict[str, torch.Tensor]] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         x = []
-        aux_loss_state = {}
-
-        # number of environments
-        N = rnn_hidden_states.size(0)
 
         # visual encoder
-        if "robot_head_rgb" in observations:
-            rgb = observations["robot_head_rgb"]
-            rgb = self.visual_encoder(rgb, N)
-            rgb = self.visual_fc(rgb)
-            aux_loss_state["perception_embed"] = rgb
-            x.append(rgb)
-
-        # Fusing of other state information (joint, is_holding, ...)
-        if len(self._fuse_keys_1d) != 0:
-            fuse_states = torch.cat(
-                [observations[k] for k in self._fuse_keys_1d], dim=-1
-            )
-        x.append(fuse_states.float())
+        rgb = observations["robot_head_rgb"]
+        rgb = self.visual_encoder(observations)
+        rgb = self.visual_fc(rgb)
+        x.append(rgb)
 
         # previous action embedding
-        # NOTE(Sergio): Actions are continuous, for discrete use
-        # torch.where(masks.view(-1), prev_actions + 1, start_token)
+        prev_actions = prev_actions.squeeze(-1)
+        start_token = torch.zeros_like(prev_actions)
         prev_actions = self.prev_action_embedding(
-            masks.float() * prev_actions.float()
+            torch.where(masks.view(-1), prev_actions + 1, start_token)
         )
         x.append(prev_actions)
 
         # state encoder
         out = torch.cat(x, dim=1)
         out, rnn_hidden_states = self.state_encoder(
-            out, rnn_hidden_states, masks, rnn_build_seq_info
+            out, rnn_hidden_states, masks
         )
-        aux_loss_state["rnn_output"] = out
-        return out, rnn_hidden_states, aux_loss_state
+
+        return out, rnn_hidden_states
 
 
 @baseline_registry.register_policy
@@ -177,8 +148,7 @@ class VC1NetPolicy(NetPolicy):
         self,
         observation_space: spaces.Dict,
         action_space,
-        input_image_size,
-        backbone_config,
+        vc_model_name,
         hidden_size: int = 512,
         rnn_type: str = "GRU",
         num_recurrent_layers: int = 1,
@@ -197,8 +167,7 @@ class VC1NetPolicy(NetPolicy):
             VC1Net(
                 observation_space=observation_space,
                 action_space=action_space,  # for previous action
-                input_image_size=input_image_size,
-                backbone_config=backbone_config,
+                vc_model_name=vc_model_name,
                 hidden_size=hidden_size,
                 rnn_type=rnn_type,
                 num_recurrent_layers=num_recurrent_layers,
@@ -228,25 +197,22 @@ class VC1NetPolicy(NetPolicy):
             observation_space=observation_space,
             action_space=action_space,
             # RNN
-            hidden_size=config.habitat_baselines.rl.policy.hidden_size,
-            rnn_type=config.habitat_baselines.rl.policy.rnn_type,
-            num_recurrent_layers=config.habitat_baselines.rl.policy.num_recurrent_layers,
+            hidden_size=config.habitat_baselines.rl.ppo.hidden_size,
+            rnn_type=config.habitat_baselines.rl.ddppo.rnn_type,
+            num_recurrent_layers=config.habitat_baselines.rl.ddppo.num_recurrent_layers,
             # Backbone
-            backbone_config=config.model,
-            freeze_backbone=config.habitat_baselines.rl.policy.freeze_backbone,
-            freeze_batchnorm=config.habitat_baselines.rl.policy.freeze_backbone,
-            # Loss
-            aux_loss_config=config.habitat_baselines.rl.auxiliary_losses,
+            vc_model_name="vc1_vitl",
+            freeze_backbone=True,
+            freeze_batchnorm=True,
             # Image
-            input_image_size=config.habitat_baselines.rl.policy.input_image_size,
-            use_augmentations=config.habitat_baselines.rl.policy.use_augmentations,
-            use_augmentations_test_time=config.habitat_baselines.rl.policy.use_augmentations_test_time,
-            run_type=config.RUN_TYPE,
+            use_augmentations=False,
+            use_augmentations_test_time=False,
+            run_type="eval",
             # Policy
             policy_config=config.habitat_baselines.rl.policy,
             # Pooling
-            global_pool=config.habitat_baselines.rl.policy.global_pool,
-            use_cls=config.habitat_baselines.rl.policy.use_cls,
+            global_pool=False,
+            use_cls=False,
         )
 
 
