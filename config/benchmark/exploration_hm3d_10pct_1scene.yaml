@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - exploration_hm3d_10pct
+  - _self_
+
+habitat:
+  dataset:
+    content_scenes:
+      - 5Poh4Qz68hd
