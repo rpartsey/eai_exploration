@@ -10,6 +10,7 @@ import torch
 from gym import spaces
 from omegaconf import DictConfig
 from torch import nn as nn
+from vc_models.models.compression_layer import create_compression_layer
 
 from habitat_baselines.common.baseline_registry import baseline_registry
 from habitat_baselines.rl.models.rnn_state_encoder import (
@@ -54,6 +55,22 @@ class VC1Net(Net):
 
         self.visual_encoder = VC1Encoder(vc_model_name=vc_model_name)
 
+        (
+            self.compression,
+            _,
+            compression_output_size,
+        ) = create_compression_layer(
+            self.visual_encoder.output_size,
+            self.visual_encoder.backbone.final_spatial,
+        )
+
+        self.visual_fc = nn.Sequential(
+            nn.Linear(compression_output_size, hidden_size),
+            nn.ReLU(True),
+        )
+
+        rnn_input_size += hidden_size
+
         # freeze backbone
         if freeze_backbone:
             # Freeze all backbone
@@ -63,15 +80,6 @@ class VC1Net(Net):
                 self.visual_encoder.backbone = convert_frozen_batchnorm(
                     self.visual_encoder.backbone
                 )
-
-        # TODO rpartsey: add compression layer
-        self.visual_fc = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(self.visual_encoder.output_size, hidden_size),
-            nn.ReLU(True),
-        )
-
-        rnn_input_size += hidden_size
 
         # previous action embedding
         self.prev_action_embedding = nn.Embedding(action_space.n + 1, 32)
@@ -116,12 +124,14 @@ class VC1Net(Net):
         rnn_hidden_states,
         prev_actions,
         masks,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         x = []
 
         # visual encoder
-        rgb = observations["robot_head_rgb"]
-        rgb = self.visual_encoder(observations)
+        # TODO rpartsey: check if this mormalization is needed
+        rgb = observations["rgb"].permute(0, 3, 1, 2).float() / 255
+        rgb = self.visual_encoder(rgb)
+        rgb = self.compression(rgb)
         rgb = self.visual_fc(rgb)
         x.append(rgb)
 
@@ -139,7 +149,9 @@ class VC1Net(Net):
             out, rnn_hidden_states, masks
         )
 
-        return out, rnn_hidden_states
+        aux_loss_state: Dict[str, torch.Tensor] = {}
+
+        return out, rnn_hidden_states, aux_loss_state
 
 
 @baseline_registry.register_policy
