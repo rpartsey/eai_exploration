@@ -27,31 +27,19 @@ class VC1Net(Net):
         observation_space: spaces.Dict,
         action_space,
         vc_model_name,
-        hidden_size: int,
-        rnn_type: str,
-        num_recurrent_layers: int,
-        use_augmentations: bool,
-        use_augmentations_test_time: bool,
-        run_type: str,
-        freeze_backbone: bool,
-        freeze_batchnorm: bool,
-        global_pool: bool,
-        use_cls: bool,
+        hidden_size: int = 512,
+        rnn_type: str = "GRU",
+        num_recurrent_layers: int = 1,
+        freeze_backbone: bool = False,
+        freeze_batchnorm: bool = False,
+        **kwargs
     ):
         super().__init__()
-
-        freeze_backbone = True
-        freeze_batchnorm = True
+        self._observation_space = observation_space
+        self._action_space = action_space
+        self._input_channels: int = 3
 
         rnn_input_size = 0
-
-        # visual encoder
-        assert "rgb" in observation_space.spaces
-
-        if (use_augmentations and run_type == "train") or (
-            use_augmentations_test_time and run_type == "eval"
-        ):
-            use_augmentations = True
 
         self.visual_encoder = VC1Encoder(vc_model_name=vc_model_name)
 
@@ -71,6 +59,8 @@ class VC1Net(Net):
 
         rnn_input_size += hidden_size
 
+        freeze_backbone = True
+        freeze_batchnorm = True
         # freeze backbone
         if freeze_backbone:
             # Freeze all backbone
@@ -82,7 +72,7 @@ class VC1Net(Net):
                 )
 
         # previous action embedding
-        self.prev_action_embedding = nn.Embedding(action_space.n + 1, 32)
+        self.prev_action_embedding = nn.Embedding(self._action_space.n + 1, 32)
         rnn_input_size += 32
 
         # state encoder
@@ -124,6 +114,7 @@ class VC1Net(Net):
         rnn_hidden_states,
         prev_actions,
         masks,
+        rnn_build_seq_info: Optional[Dict[str, torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         x = []
 
@@ -134,6 +125,8 @@ class VC1Net(Net):
         rgb = self.compression(rgb)
         rgb = self.visual_fc(rgb)
         x.append(rgb)
+
+        # TODO rpartsey: add GPS and compass sesnsor
 
         # previous action embedding
         prev_actions = prev_actions.squeeze(-1)
@@ -146,7 +139,7 @@ class VC1Net(Net):
         # state encoder
         out = torch.cat(x, dim=1)
         out, rnn_hidden_states = self.state_encoder(
-            out, rnn_hidden_states, masks
+            out, rnn_hidden_states, masks, rnn_build_seq_info
         )
 
         aux_loss_state: Dict[str, torch.Tensor] = {}
@@ -164,13 +157,8 @@ class VC1NetPolicy(NetPolicy):
         hidden_size: int = 512,
         rnn_type: str = "GRU",
         num_recurrent_layers: int = 1,
-        use_augmentations: bool = False,
-        use_augmentations_test_time: bool = False,
-        run_type: str = "train",
         freeze_backbone: bool = False,
         freeze_batchnorm: bool = False,
-        global_pool: bool = False,
-        use_cls: bool = False,
         policy_config: DictConfig = None,
         aux_loss_config: Optional[DictConfig] = None,
         **kwargs
@@ -183,13 +171,8 @@ class VC1NetPolicy(NetPolicy):
                 hidden_size=hidden_size,
                 rnn_type=rnn_type,
                 num_recurrent_layers=num_recurrent_layers,
-                use_augmentations=use_augmentations,
-                use_augmentations_test_time=use_augmentations_test_time,
-                run_type=run_type,
                 freeze_backbone=freeze_backbone,
                 freeze_batchnorm=freeze_batchnorm,
-                global_pool=global_pool,
-                use_cls=use_cls,
             ),
             action_space=action_space,
             policy_config=policy_config,
@@ -216,15 +199,8 @@ class VC1NetPolicy(NetPolicy):
             vc_model_name="vc1_vitl",
             freeze_backbone=True,
             freeze_batchnorm=True,
-            # Image
-            use_augmentations=False,
-            use_augmentations_test_time=False,
-            run_type="eval",
             # Policy
             policy_config=config.habitat_baselines.rl.policy,
-            # Pooling
-            global_pool=False,
-            use_cls=False,
         )
 
 
