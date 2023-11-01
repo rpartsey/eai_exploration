@@ -43,14 +43,15 @@ or if you are using Visual Studio Code:
 }
 ```
 
-3\. Run exploration DD-PPO training:
+3\. Run depth agent exploration DD-PPO training:
 ```bash
 MAGNUM_LOG=quiet HABITAT_SIM_LOG=quiet python -u run.py \
 --config-name=ddppo_exploration.yaml \
-benchmark=exploration_hm3d_10pct_depth_1scene_1episode \
+benchmark=exploration_hm3d_10pct_1scene_1episode \
 habitat_baselines.torch_gpu_id=0 \
 habitat_baselines.num_environments=1 \
 habitat_baselines.evaluate=False
++habitat/simulator/agents@habitat.simulator.agents.main_agent=depth_agent
 ```
 
 Expected output:
@@ -76,11 +77,35 @@ or if you are using Visual Studio Code:
     },
     "args": [
         "--config-name", "ddppo_exploration.yaml",
-        "benchmark=exploration_hm3d_10pct_depth_1scene_1episode",
+        "benchmark=exploration_hm3d_10pct_1scene_1episode",
         "habitat_baselines.torch_gpu_id=0",
         "habitat_baselines.num_environments=1",
-        "habitat_baselines.evaluate=False"
+        "habitat_baselines.evaluate=False",
+        "+habitat/simulator/agents@habitat.simulator.agents.main_agent=depth_agent",
     ]
 }
 ```
 Note, if you are using Mac you may have problems with spawning processes by VectorEnv. In this case, you can use HABITAT_ENV_DEBUG=1 environment variable to run training using ThreadedVectorEnv.
+
+**CLI overrides**
+
+Agent type can be changed by specifying any of available agents configs (depth_agent, rgb_agent, rgbd_agent):
+```bash
++habitat/simulator/agents@habitat.simulator.agents.main_agent=depth_agent
+```
+
+To controll sensor resolution add:
+```bash
+habitat.simulator.agents.main_agent.sim_sensors.rgb_sensor.width=256 \
+habitat.simulator.agents.main_agent.sim_sensors.rgb_sensor.height=256
+```
+
+Lab sensors can be added by specifying any of available sensors configs. For example, to add GPS + Compass add:
+```
++habitat/task/lab_sensors@habitat.task.lab_sensors.pointgoal_with_gps_compass_sensor=pointgoal_with_gps_compass_sensor
+```
+
+To use VC1NetPolicy (with VC-1 as visual encoder) add:
+```bash
+habitat_baselines.rl.policy.main_agent.name=VC1NetPolicy
+```
