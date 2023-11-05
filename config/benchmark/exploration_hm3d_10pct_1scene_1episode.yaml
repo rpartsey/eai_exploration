@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - exploration_hm3d_10pct_1scene
+  - _self_
+
+habitat:
+  environment:
+    iterator_options:
+      num_episode_sample: 1
