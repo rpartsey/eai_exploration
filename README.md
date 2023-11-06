@@ -12,7 +12,7 @@ Core:
 - (and their dependencies)
 
 Third party:
-- eai-vc (install from [this](https://github.com/facebookresearch/eai-vc/commit/76fe35e87b1937168f1ec4b236e863451883eaf3) commit) `cd eai-cv && pip install -e ./vc_models`
+- eai-vc (install from main; [this](https://github.com/facebookresearch/eai-vc/commit/76fe35e87b1937168f1ec4b236e863451883eaf3) commit) `cd eai-cv && pip install -e ./vc_models`
 
 **Datasets**
 - HM3D [scenes dataset](https://aihabitat.org/datasets/hm3d/). Note, it can be also downloaded using habitat-sim [datasets_download.py](https://github.com/facebookresearch/habitat-sim/blob/main/src_python/habitat_sim/utils/datasets_download.py) utility: `python -m habitat_sim.utils.datasets_download --uids hm3d --data-path path/to/data/`
