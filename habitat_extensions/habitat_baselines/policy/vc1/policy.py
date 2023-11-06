@@ -185,6 +185,8 @@ class VC1NetPolicy(NetPolicy):
         config: DictConfig,
         observation_space: spaces.Dict,
         action_space,
+        orig_action_space=None,
+        agent_name="main_agent",
         **kwargs
     ):
         return cls(
@@ -200,7 +202,7 @@ class VC1NetPolicy(NetPolicy):
             freeze_backbone=True,
             freeze_batchnorm=True,
             # Policy
-            policy_config=config.habitat_baselines.rl.policy,
+            policy_config=config.habitat_baselines.rl.policy[agent_name],
         )
 
 
