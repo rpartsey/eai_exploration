@@ -38,6 +38,9 @@ class VC1Net(Net):
         self._observation_space = observation_space
         self._action_space = action_space
         self._input_channels: int = 3
+        self._rgb_key = "rgb"
+        self._rgb_scaling = {"rgb": 1.0 / 255.0}
+        self._start_sensor_key = "start_position_sensor"
 
         rnn_input_size = 0
 
@@ -71,8 +74,14 @@ class VC1Net(Net):
                     self.visual_encoder.backbone
                 )
 
+        if self._start_sensor_key in self._observation_space.spaces:
+            # expected start sensor output: [d, cos(θ), sin(θ)]
+            n_input_goal = self._observation_space.spaces[self._start_sensor_key].shape[0]
+            self.relative_start_embedding = nn.Linear(n_input_goal, 32)
+            rnn_input_size += 32
+
         # previous action embedding
-        self.prev_action_embedding = nn.Embedding(self._action_space.n + 1, 32)
+        self.prev_action_embedding = nn.Embedding(self._action_space.n + 1, 32)  # 0 is a start token
         rnn_input_size += 32
 
         # state encoder
@@ -116,17 +125,23 @@ class VC1Net(Net):
         masks,
         rnn_build_seq_info: Optional[Dict[str, torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
-        x = []
+        nn_input = []
 
         # visual encoder
-        # TODO rpartsey: check if this mormalization is needed
-        rgb = observations["rgb"].permute(0, 3, 1, 2).float() / 255
-        rgb = self.visual_encoder(rgb)
-        rgb = self.compression(rgb)
-        rgb = self.visual_fc(rgb)
-        x.append(rgb)
+        visual_obs = (
+            observations[self._rgb_key].float() 
+            * self._rgb_scaling[self._rgb_key]
+        ).permute(0, 3, 1, 2).float()  # [BCHW]
 
-        # TODO rpartsey: add GPS and compass sesnsor
+        visual_features = self.visual_encoder(visual_obs)
+        visual_features = self.compression(visual_features)
+        visual_features = self.visual_fc(visual_features)
+        nn_input.append(visual_features)
+
+        if hasattr(self, "relative_start_embedding"):
+            start_position = observations[self._start_sensor_key]
+            start_position = self.relative_start_embedding(start_position)
+            nn_input.append(start_position)
 
         # previous action embedding
         prev_actions = prev_actions.squeeze(-1)
@@ -134,10 +149,10 @@ class VC1Net(Net):
         prev_actions = self.prev_action_embedding(
             torch.where(masks.view(-1), prev_actions + 1, start_token)
         )
-        x.append(prev_actions)
+        nn_input.append(prev_actions)
 
         # state encoder
-        out = torch.cat(x, dim=1)
+        out = torch.cat(nn_input, dim=1)
         out, rnn_hidden_states = self.state_encoder(
             out, rnn_hidden_states, masks, rnn_build_seq_info
         )
